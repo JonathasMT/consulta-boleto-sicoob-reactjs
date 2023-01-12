@@ -3,27 +3,18 @@ import { useState } from 'react';
 import './App.css';
 
 const api = axios.create({
-    baseURL: 'http://localhost:3001'
+    baseURL: 'https://api.sicoob.com.br/cobranca-bancaria/v2'
 });
 
-
-const modalidade = 1; 
-const nossoNumero = null;
-const linhaDigitavel = '00190500954014481606906809350314337370000000100';
-const codigoBarras = '';
-
-const clientid = 'dsfsd1f85sdf185dsf10s25df4';
-const token = 'aasdsadsad1asdsadsad1asd1sa2d5sad4sad1sa2d5';
-
-function App() {
+const App = () => {
     // integer // obrigatório // número que identifica o contrato do beneficiário no Sisbr.
-    const [numeroContrato, setNumeroContrato] = useState(null);
+    const [numeroContrato, setNumeroContrato] = useState('');
 
     // integer // obrigatório // identifica a modalidade do boleto.
     const [modalidade, setModalidade] = useState(1);
     
     // integer // número identificador do boleto no Sisbr. Caso seja infomado, não é necessário infomar a linha digitável ou código de barras.
-    const [nossoNumero, setNossoNumero] = useState(null);
+    const [nossoNumero, setNossoNumero] = useState('');
 
     // string // número da linha digitável do boleto com 47 posições. Caso seja informado, não é necessário informar o nosso número ou código de barras.
     const [linhaDigitavel, setLinhaDigitavel] = useState('');
@@ -37,7 +28,11 @@ function App() {
     // string // obrigatório
     const [token, setToken] = useState('');
 
-    const submeter = async() => {
+    // repostas
+    const [msg, setMsg] = useState('Oi');
+
+    const submeter = async(e) => {
+        e.preventDefault();
         try {
             const resposta = await api.get('/boletos', {
                 headers: {
@@ -56,8 +51,19 @@ function App() {
                 }
             });
             console.log(resposta);
+            try {
+                setMsg(JSON.stringify(resposta.response.data));
+            } catch (error) {
+                setMsg('Veja o retorno no console do navegador.');
+            }
           } catch (erro) {
             console.error(erro);
+            try {
+                setMsg(JSON.stringify(erro.response.data));
+            } catch (error) {
+                setMsg('Ocorreu um erro. Veja no console do navegador.');
+            }
+            
           }
     };
 
@@ -70,7 +76,7 @@ function App() {
         <p>
             Consultar boleto SICOOB
         </p>
-        <form className='formulario' onSubmit={submeter}>
+        <form className='formulario' onSubmit={submeter} target='_self' autoComplete='on'>
 
             <label className='label' id='contrato'>Número do contrato:</label>
             <input
@@ -81,7 +87,7 @@ function App() {
                 placeholder='Número que identifica o contrato do beneficiário no Sisbr'
                 required/>
 
-            <label className='label'>Modalidade:</label>
+            <label className='label' id='modalidade'>Modalidade:</label>
             <select
                 id='modalidade'
                 className='select'
@@ -92,7 +98,7 @@ function App() {
                 
             </select>
 
-            <label className='label'>Nosso número:</label>
+            <label className='label' id='numero'>Nosso número:</label>
             <input
                 type='number'
                 className='input'
@@ -100,7 +106,7 @@ function App() {
                 onChange={(evento) => [setNossoNumero(evento.target.value)]}
                 placeholder='Número identificador do boleto no Sisbr'/>
 
-            <label className='label'>Linha digitável:
+            <label className='label' id='linha'>Linha digitável:
             <p className='descricao'>
             Caso seja informado, não é necessário informar o nosso número ou código de barras.
             </p>
@@ -114,7 +120,7 @@ function App() {
                 minLength='47'
                 maxLength='47'/>
 
-            <label className='label'>Código de barras:</label>
+            <label className='label' id='codigo'>Código de barras:</label>
             <input
                 type='text'
                 className='input'
@@ -122,7 +128,7 @@ function App() {
                 onChange={(evento) => [setCodigoBarras(evento.target.value)]}
                 placeholder='Número de código de barras do boleto com 44 posições'/>
 
-            <label className='label'>Cliente ID:</label>
+            <label className='label' id='cliente'>Cliente ID:</label>
             <input
                 type='text'
                 className='input'
@@ -130,7 +136,7 @@ function App() {
                 onChange={(evento) => [setClientid(evento.target.value)]}
                 required/>
 
-            <label className='label'>Token:</label>
+            <label className='label' id='token'>Token:</label>
             <input
                 type='text'
                 className='input'
@@ -141,6 +147,8 @@ function App() {
             <input type='submit' className='botao' value='Consultar'/>
 
         </form>
+        <br/>
+        <p className='descricao'>{msg}</p>
 
       </header>
     </div>
